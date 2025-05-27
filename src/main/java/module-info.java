@@ -1,6 +1,7 @@
 module fr.andrew.comboboxlistviewjavafx {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.desktop;
 
 
     opens fr.andrew.comboboxlistviewjavafx to javafx.fxml;
