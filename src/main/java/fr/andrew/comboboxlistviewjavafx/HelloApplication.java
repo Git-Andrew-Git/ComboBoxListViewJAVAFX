@@ -14,12 +14,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Paint;
+
 import javafx.stage.Stage;
 
-import java.awt.*;
+
+
+import java.io.FileInputStream;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class HelloApplication extends Application {
     @Override
@@ -30,13 +37,20 @@ public class HelloApplication extends Application {
 //        stage.setScene(scene);
 //        stage.show();
 
+        FileInputStream imageFileInputStream =
+                new FileInputStream(getClass().getResource("media/up_arrow.png").getPath());
+        Image image = new Image(imageFileInputStream);
+        ImageView imageView = new ImageView(image);
+
+        FileInputStream imageFileInputStream1 =
+                new FileInputStream(getClass().getResource("media/down_arrow.png").getPath());
+        Image image1 = new Image(imageFileInputStream1);
+        ImageView imageView1 = new ImageView(image1);
+
         GridPane gridPane = new GridPane();
 
-        ObservableList<Country> comboBoxList = FXCollections.observableArrayList();
-        comboBoxList.add(new Country("Ukraine", "UKR"));
-        comboBoxList.add(new Country("France", "FRA"));
-        comboBoxList.add(new Country("Great Britain", "GRB"));
-        comboBoxList.add(new Country("Germany", "GRE"));
+        ObservableList<Country> comboBoxList = FXCollections.observableArrayList(getCountriesList());
+
         comboBoxList.addListener(new ListChangeListener<Country>() {
             @Override
             public void onChanged(Change<? extends Country> country) {
@@ -110,8 +124,8 @@ public class HelloApplication extends Application {
             Country country = comboBox.getValue();
             if (country != null) {
                 listViewList.add(country);
+                comboBoxList.remove(comboBox.getValue());
             }
-            comboBoxList.remove(comboBox.getValue());
         });
 
 
@@ -129,9 +143,9 @@ public class HelloApplication extends Application {
         button3.setOnAction(actionEvent -> {
             Country country = listView.getSelectionModel().getSelectedItem();
             if (country != null) {
-                listViewList.add(country);
+                comboBoxList.add(country);
+                listViewList.remove(listView.getSelectionModel().getSelectedItem());
             }
-            comboBoxList.remove(comboBox.getValue());
         });
 
         Button button4 = new Button("<<");
@@ -139,20 +153,76 @@ public class HelloApplication extends Application {
         button4.setMinWidth(40);
         GridPane.setHalignment(button4, HPos.CENTER);
         GridPane.setValignment(button4, VPos.CENTER);
+        button4.setOnAction(actionEvent -> {
+            comboBoxList.addAll(listViewList);
+            listViewList.clear();
+            if (listViewList.size() == 0) {
+                button4.setDisable(true);
+            } else {
+                button4.setDisable(false);
+            }
+            if (comboBoxList.size() == 0) {
+                button2.setDisable(true);
+            } else {
+                button2.setDisable(false);
+            }
+        });
+        button2.setOnAction(actionEvent -> {
+            listViewList.addAll(comboBoxList);
+            comboBoxList.clear();
+            if (comboBoxList.size() == 0) {
+                button2.setDisable(true);
+            } else {
+                button2.setDisable(false);
+            }
+            if (listViewList.size() == 0) {
+                button4.setDisable(true);
+            } else {
+                button4.setDisable(false);
+            }        });
 
-        Button button5 = new Button("Haut");
+        Button button5 = new Button("",imageView);
+//        button5.setMinSize(30, 15);
+        imageView.setFitHeight(30);
+        imageView.setFitHeight(17);
+        imageView.setPreserveRatio(true);
+
         gridPane.add(button5, 4, 0);
         button5.setMinWidth(40);
         GridPane.setHalignment(button5, HPos.RIGHT);
         GridPane.setValignment(button5, VPos.CENTER);
+        button5.setOnAction(actionEvent -> {
+            Country country = listView.getSelectionModel().getSelectedItem();
+            int index = listViewList.indexOf(country);
+            if (country != null && index > 0) {
+                listViewList.remove(country);
+                listViewList.add(index-1, country);
+                listView.getSelectionModel().select(index-1);
+            }
+        });
 
-        Button button6 = new Button("Bas");
+        Button button6 = new Button("", imageView1);
         gridPane.add(button6, 5, 0);
+        imageView1.setFitHeight(30);
+        imageView1.setFitHeight(17);
+        imageView1.setPreserveRatio(true);
         button6.setMinWidth(40);
         GridPane.setHalignment(button6, HPos.RIGHT);
         GridPane.setValignment(button6, VPos.CENTER);
+        button6.setOnAction(actionEvent -> {
+            Country country = listView.getSelectionModel().getSelectedItem();
+            int index = listViewList.indexOf(country);
+            if (country != null && index < listViewList.size()-1) {
+                listViewList.remove(country);
+                listViewList.add(index+1, country);
+                listView.getSelectionModel().select(index+1);
+            }
+        });
 
         Button button7 = new Button("Quitter");
+        button7.setOnAction(actionEvent -> {
+            stage.close();
+        });
         gridPane.add(button7, 3, 6, 3, 1);
         GridPane.setHalignment(button7, HPos.RIGHT);
         GridPane.setValignment(button7, VPos.BOTTOM);
@@ -170,7 +240,22 @@ public class HelloApplication extends Application {
         stage.show();
     }
 
+    public static ArrayList<Country> getCountriesList() {
+        ArrayList<Country> countries = new ArrayList<>();
+
+        String[] countryCodes = Locale.getISOCountries();
+
+
+        for (String countryCode : countryCodes) {
+            Locale obj = new Locale("", countryCode);
+            countries.add(new Country(obj.getDisplayCountry(), obj.getISO3Country()));
+        }
+
+        return countries;
+    }
+
     public static void main(String[] args) {
         launch();
     }
 }
+
