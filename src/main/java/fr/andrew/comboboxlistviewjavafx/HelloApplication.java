@@ -14,8 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+
 import javafx.scene.layout.*;
 
 import javafx.stage.Stage;
@@ -37,15 +36,7 @@ public class HelloApplication extends Application {
 //        stage.setScene(scene);
 //        stage.show();
 
-        FileInputStream imageFileInputStream =
-                new FileInputStream(getClass().getResource("media/up_arrow.png").getPath());
-        Image image = new Image(imageFileInputStream);
-        ImageView imageView = new ImageView(image);
 
-        FileInputStream imageFileInputStream1 =
-                new FileInputStream(getClass().getResource("media/down_arrow.png").getPath());
-        Image image1 = new Image(imageFileInputStream1);
-        ImageView imageView1 = new ImageView(image1);
 
         GridPane gridPane = new GridPane();
 
@@ -78,10 +69,10 @@ public class HelloApplication extends Application {
         double[] rowHeights = {
                 40,   // Row 0 - Label
                 40,   // Row 1 - ComboBox and button
-                40,   // Row 2 - Button
+                40,   // Row 2
                 20,   // Row 3 - Empty or spacing
-                40,   // Row 4 - Button
-                40,   // Row 5 - Button
+                40,   // Row 4
+                40,   // Row 5
                 35    // Row 6 - Quitter button
         };
 
@@ -93,6 +84,9 @@ public class HelloApplication extends Application {
             gridPane.getRowConstraints().add(rc);
         }
 //        gridPane.setGridLinesVisible(true);
+
+        UpDownListView<Country> upDownListView  = new UpDownListView<>();
+        upDownListView.setObservableList(FXCollections.observableArrayList());
 
 
         Label label = new Label("Pays disponibles :");
@@ -107,9 +101,8 @@ public class HelloApplication extends Application {
         GridPane.setMargin(comboBox, new Insets(10));
 
 
-        ObservableList<Country> listViewList = FXCollections.observableArrayList();
-        ListView<Country> listView = new ListView<>(listViewList);
-        gridPane.add(listView, 3,1, 3, 5);
+
+        gridPane.add(upDownListView.getListView(), 3,1, 3, 5);
 
         gridPane.add(comboBox, 0, 1,2,1);
         GridPane.setHalignment(comboBox, HPos.LEFT);
@@ -123,7 +116,7 @@ public class HelloApplication extends Application {
         button1.setOnAction(actionEvent -> {
             Country country = comboBox.getValue();
             if (country != null) {
-                listViewList.add(country);
+                upDownListView.getObservableList().add(country);
                 comboBoxList.remove(comboBox.getValue());
             }
         });
@@ -141,10 +134,10 @@ public class HelloApplication extends Application {
         GridPane.setHalignment(button3, HPos.CENTER);
         GridPane.setValignment(button3, VPos.CENTER);
         button3.setOnAction(actionEvent -> {
-            Country country = listView.getSelectionModel().getSelectedItem();
+            Country country = (Country) upDownListView.getListView().getSelectionModel().getSelectedItem();
             if (country != null) {
                 comboBoxList.add(country);
-                listViewList.remove(listView.getSelectionModel().getSelectedItem());
+                upDownListView.getObservableList().remove(upDownListView.getListView().getSelectionModel().getSelectedItem());
             }
         });
 
@@ -154,9 +147,9 @@ public class HelloApplication extends Application {
         GridPane.setHalignment(button4, HPos.CENTER);
         GridPane.setValignment(button4, VPos.CENTER);
         button4.setOnAction(actionEvent -> {
-            comboBoxList.addAll(listViewList);
-            listViewList.clear();
-            if (listViewList.size() == 0) {
+            comboBoxList.addAll(upDownListView.getObservableList());
+            upDownListView.getObservableList().clear();
+            if (upDownListView.getObservableList().size() == 0) {
                 button4.setDisable(true);
             } else {
                 button4.setDisable(false);
@@ -168,54 +161,44 @@ public class HelloApplication extends Application {
             }
         });
         button2.setOnAction(actionEvent -> {
-            listViewList.addAll(comboBoxList);
+            upDownListView.getObservableList().addAll(comboBoxList);
             comboBoxList.clear();
             if (comboBoxList.size() == 0) {
                 button2.setDisable(true);
             } else {
                 button2.setDisable(false);
             }
-            if (listViewList.size() == 0) {
+            if (upDownListView.getObservableList().size() == 0) {
                 button4.setDisable(true);
             } else {
                 button4.setDisable(false);
             }        });
 
-        Button button5 = new Button("",imageView);
-//        button5.setMinSize(30, 15);
-        imageView.setFitHeight(30);
-        imageView.setFitHeight(17);
-        imageView.setPreserveRatio(true);
-
-        gridPane.add(button5, 4, 0);
-        button5.setMinWidth(40);
-        GridPane.setHalignment(button5, HPos.RIGHT);
-        GridPane.setValignment(button5, VPos.CENTER);
-        button5.setOnAction(actionEvent -> {
-            Country country = listView.getSelectionModel().getSelectedItem();
-            int index = listViewList.indexOf(country);
+        gridPane.add(upDownListView.getUpBtn(), 4, 0);
+        upDownListView.getUpBtn().setMinWidth(40);
+        GridPane.setHalignment(upDownListView.getUpBtn(), HPos.RIGHT);
+        GridPane.setValignment(upDownListView.getUpBtn(), VPos.CENTER);
+        upDownListView.getUpBtn().setOnAction(actionEvent -> {
+            Country country = (Country) upDownListView.getListView().getSelectionModel().getSelectedItem();
+            int index = upDownListView.getObservableList().indexOf(country);
             if (country != null && index > 0) {
-                listViewList.remove(country);
-                listViewList.add(index-1, country);
-                listView.getSelectionModel().select(index-1);
+                upDownListView.getObservableList().remove(country);
+                upDownListView.getObservableList().add(index-1, country);
+                upDownListView.getListView().getSelectionModel().select(index-1);
             }
         });
 
-        Button button6 = new Button("", imageView1);
-        gridPane.add(button6, 5, 0);
-        imageView1.setFitHeight(30);
-        imageView1.setFitHeight(17);
-        imageView1.setPreserveRatio(true);
-        button6.setMinWidth(40);
-        GridPane.setHalignment(button6, HPos.RIGHT);
-        GridPane.setValignment(button6, VPos.CENTER);
-        button6.setOnAction(actionEvent -> {
-            Country country = listView.getSelectionModel().getSelectedItem();
-            int index = listViewList.indexOf(country);
-            if (country != null && index < listViewList.size()-1) {
-                listViewList.remove(country);
-                listViewList.add(index+1, country);
-                listView.getSelectionModel().select(index+1);
+        gridPane.add(upDownListView.getDownBtn(), 5, 0);
+        upDownListView.getDownBtn().setMinWidth(40);
+        GridPane.setHalignment(upDownListView.getDownBtn(), HPos.RIGHT);
+        GridPane.setValignment(upDownListView.getDownBtn(), VPos.CENTER);
+        upDownListView.getDownBtn().setOnAction(actionEvent -> {
+            Country country = (Country) upDownListView.getListView().getSelectionModel().getSelectedItem();
+            int index = upDownListView.getObservableList().indexOf(country);
+            if (country != null && index < upDownListView.getObservableList().size()-1) {
+                upDownListView.getObservableList().remove(country);
+                upDownListView.getObservableList().add(index+1, country);
+                upDownListView.getListView().getSelectionModel().select(index+1);
             }
         });
 
